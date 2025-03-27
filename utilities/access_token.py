@@ -63,8 +63,7 @@ def generate_new_long_lived_token(business) -> str:
     APP_SECRET = credentials["META_APP_SECRET"]
 
     try:
-        load_dotenv()
-        short_lived_token = os.getenv("ACCESS_TOKEN")
+        short_lived_token = ACCESS_TOKEN
 
         if not short_lived_token:
             raise Exception("Short-lived token not found in .env file.")
