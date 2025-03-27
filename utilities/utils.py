@@ -3,9 +3,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def get_credentials(business_code: str):
+def get_credentials(business: str):
     """Fetch brand-specific credentials dynamically."""
-    if business_code == "zing":
+    if business.lower() == "zing":
         return {
             "BASE_URL": os.getenv("ZING_BASE_URL"),
             "INSTA_ACCESS_TOKEN": os.getenv("ZING_INSTA_ACCESS_TOKEN"),
@@ -15,7 +15,7 @@ def get_credentials(business_code: str):
             "META_APP_SECRET": os.getenv("ZING_META_APP_SECRET"),
             "LONG_LIVED_TOKEN": os.getenv("ZING_LONG_LIVED_TOKEN"),
         }
-    elif business_code == "pkm":
+    elif business.lower() == "prathiksham":
         return {
             "BASE_URL": os.getenv("PKM_BASE_URL"),
             "INSTA_ACCESS_TOKEN": os.getenv("PKM_INSTA_ACCESS_TOKEN"),
@@ -25,7 +25,7 @@ def get_credentials(business_code: str):
             "META_APP_SECRET": os.getenv("PKM_META_APP_SECRET"),
             "LONG_LIVED_TOKEN": os.getenv("PKM_LONG_LIVED_TOKEN"),
         }
-    elif business_code == "beelittle":
+    elif business.lower() == "beelittle":
         return {
             "BASE_URL": os.getenv("BLT_BASE_URL"),
             "INSTA_ACCESS_TOKEN": os.getenv("BLT_INSTA_ACCESS_TOKEN"),
@@ -35,7 +35,7 @@ def get_credentials(business_code: str):
             "META_APP_SECRET": os.getenv("BLT_META_APP_SECRET"),
             "LONG_LIVED_TOKEN": os.getenv("BLT_LONG_LIVED_TOKEN"),
         }
-    elif business_code == "adoreaboo":
+    elif business.lower() == "adoreaboo":
         return {
             "BASE_URL": os.getenv("ADB_BASE_URL"),
             "INSTA_ACCESS_TOKEN": os.getenv("ADOREABOO_INSTA_ACCESS_TOKEN"),

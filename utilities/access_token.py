@@ -2,15 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv, set_key
 from fastapi import HTTPException, status
-
-load_dotenv()
-
-APP_ID = os.getenv("META_APP_ID")
-APP_SECRET = os.getenv("META_APP_SECRET")
-BASE_URL = os.getenv("BASE_URL")
-ADOREABOO_ACCESS_TOKEN = os.getenv("ADOREABOO_ACCESS_TOKEN")
-ADOREABOO_INSTAGRAM_ACCOUNT_ID = os.getenv("ADOREABOO_INSTAGRAM_ACCOUNT_ID")
-LONG_LIVED_TOKEN = os.getenv("LONG_LIVED_TOKEN")
+from utilities.utils import get_credentials
 
 def refresh_access_token(app_id: str, app_secret: str, long_lived_token: str):
     """
@@ -31,12 +23,17 @@ def refresh_access_token(app_id: str, app_secret: str, long_lived_token: str):
     data = response.json()
     return data.get("access_token")
 
-def is_access_token_expired(access_token: str) -> bool:
+def is_access_token_expired(access_token: str, business: str) -> bool:
     """
     Check if the access token has expired by making a test request to the Instagram API.
     Returns True if expired, False if valid.
     """
-    test_url = f"{BASE_URL}{ADOREABOO_INSTAGRAM_ACCOUNT_ID}?fields=id&access_token={ADOREABOO_ACCESS_TOKEN}"
+    credentials = get_credentials(business)
+    BASE_URL = credentials["BASE_URL"]
+    INSTAGRAM_ACCOUNT_ID = credentials["INSTAGRAM_ACCOUNT_ID"]
+    ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
+
+    test_url = f"{BASE_URL}{INSTAGRAM_ACCOUNT_ID}?fields=id&access_token={ACCESS_TOKEN}"
     response = requests.get(test_url)
    # Check for 401 Unauthorized (token expired)
     if response.status_code == 401:
@@ -55,14 +52,19 @@ def is_access_token_expired(access_token: str) -> bool:
     
     return False
 
-def generate_new_long_lived_token() -> str:
+def generate_new_long_lived_token(business) -> str:
     """
     Generate a new long-lived token using the current short-lived token.
     Returns the new long-lived token.
     """
+    credentials = get_credentials(business)
+    ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
+    APP_ID = credentials["META_APP_ID"]
+    APP_SECRET = credentials["META_APP_SECRET"]
+
     try:
         load_dotenv()
-        short_lived_token = os.getenv("ADOREABOO_ACCESS_TOKEN")
+        short_lived_token = os.getenv("ACCESS_TOKEN")
 
         if not short_lived_token:
             raise Exception("Short-lived token not found in .env file.")
