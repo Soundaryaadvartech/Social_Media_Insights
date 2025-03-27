@@ -4,14 +4,10 @@ import traceback
 import asyncio
 from asyncio import Semaphore
 from aiohttp import ClientSession, ClientConnectorError
-from dotenv import load_dotenv
 from sqlalchemy import func
 from fastapi import HTTPException, status
 from database.models import PostInsights, Posts
-
-load_dotenv()
-
-BASE_URL = os.getenv("BASE_URL")
+from utilities.utils import get_credentials
 
 shared_session = None
 
@@ -25,7 +21,9 @@ async def shutdown_event():
     if shared_session:
         await shared_session.close()
 
-async def fetch_post_metrics(post_id, token):
+async def fetch_post_metrics(post_id, token, business):
+    credentials = get_credentials(business)
+    BASE_URL = credentials["BASE_URL"]
     global shared_session
     async with shared_session.get(f"{BASE_URL}{post_id}?fields=like_count&access_token={token}") as response:
         likes_data = await response.json()
@@ -36,14 +34,14 @@ async def fetch_post_metrics(post_id, token):
     return likes_data, insights_data
 
 
-async def process_posts_async(posts, token, concurrency=50, retries=3, delay=2):
+async def process_posts_async(posts, token, business, concurrency=50, retries=3, delay=2):
     semaphore = Semaphore(concurrency)  # Limit to 50 concurrent tasks
     tasks = []
 
     async def safe_fetch(post_id, attempt=1):
         async with semaphore:
             try:
-                return await fetch_post_metrics(post_id, token)
+                return await fetch_post_metrics(post_id, token, business)
             except ClientConnectorError as e:
                 # Retry logic for transient errors
                 if attempt <= retries:
