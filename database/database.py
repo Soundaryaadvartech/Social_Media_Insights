@@ -14,10 +14,11 @@ DB_HOST = os.getenv("DB_HOST")
 # Mapping business to database names
 DB_MAPPING = {
     "zing": os.getenv("ZING_DB_NAME"),
-    "pkm": os.getenv("PKM_DB_NAME"),
+    "prathiksham": os.getenv("PKM_DB_NAME"),
     "beelittle": os.getenv("BLT_DB_NAME"),
     "adoreaboo": os.getenv("ADB_DB_NAME"),
 }
+Base = declarative_base()
 
 def get_database_url(business: str):
     """Return the correct database URL based on the provided business."""
@@ -30,9 +31,9 @@ def get_database_url(business: str):
 def get_engine(business: str):
     """Create a new engine for the given business."""
     db_url = get_database_url(business)
-    return create_engine(db_url, pool_recycle=3600, pool_timeout=60)
-
-Base = declarative_base()
+    engine = create_engine(db_url, pool_recycle=3600, pool_timeout=60)
+    Base.metadata.create_all(bind = engine)
+    return engine
 
 # Dependency to get a DB session dynamically
 def get_db(business: str):
@@ -44,3 +45,8 @@ def get_db(business: str):
         yield db
     finally:
         db.close()
+
+def get_dynamic_db(business: str):
+    if business is None:
+        raise ValueError("Business Name  is required")
+    return next(get_db(business))

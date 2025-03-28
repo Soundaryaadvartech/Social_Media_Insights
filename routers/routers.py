@@ -7,21 +7,21 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from database.models import SocialMedia, EngagedAudienceAge, EngagedAudienceGender, EngagedAudienceLocation
 from utilities.access_token import refresh_access_token, is_access_token_expired, generate_new_long_lived_token
-from database.database import get_db
+from database.database import get_db, get_dynamic_db
 from utilities.utils import get_credentials
 from utilities.fetch_posts_helper import get_posts_async, process_posts_async, store_posts_and_metrics
 
 router = APIRouter()
 
 @router.get("/fetch_insights")
-def fetch_insights(business: str, db: Session = Depends(get_db())):
+def fetch_insights(business: str, db: Session = Depends(get_dynamic_db)):
+
     """
     Fetch a summarized version of Instagram insights for the specified business.
     Automatically refreshes access token if needed.
     """
     try:
         # Get credentials dynamically based on business_code
-        db = next(get_db(business))
         credentials = get_credentials(business)
         BASE_URL = credentials["BASE_URL"]
         ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
@@ -147,10 +147,9 @@ def fetch_insights(business: str, db: Session = Depends(get_db())):
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": "Something went wrong."})
     
 @router.get("/engaged_audience_demographics")
-def engaged_audience_demographics(business: str,db: Session = Depends(get_db)):
+def engaged_audience_demographics(business: str,db: Session = Depends(get_dynamic_db)):
     try:
         # Get credentials dynamically based on business_code
-        db = next(get_db(business))
         credentials = get_credentials(business)
         BASE_URL = credentials["BASE_URL"]
         ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
@@ -304,10 +303,9 @@ def engaged_audience_demographics(business: str,db: Session = Depends(get_db)):
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": "Something went wrong."})
 
 @router.get("/fetch_all_posts")
-async def fetch_all_posts(business: str,db: Session = Depends(get_db)):
+async def fetch_all_posts(business: str,db: Session = Depends(get_dynamic_db)):
     try:
         # Get credentials dynamically based on business_code
-        db = next(get_db(business))
         credentials = get_credentials(business)
         BASE_URL = credentials["BASE_URL"]
         ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
