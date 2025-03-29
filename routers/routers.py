@@ -49,6 +49,7 @@ def fetch_insights(business: str, db: Session = Depends(get_dynamic_db)):
         # Fetch Instagram account details
         account_url = f"{BASE_URL}{INSTAGRAM_ACCOUNT_ID}?fields=id,username,followers_count&access_token={ACCESS_TOKEN}"
         account_response = requests.get(account_url, timeout=120)
+
         if account_response.status_code != 200:
             raise HTTPException(
                 status_code=account_response.status_code,
@@ -59,6 +60,7 @@ def fetch_insights(business: str, db: Session = Depends(get_dynamic_db)):
         # Fetch insights
         insights_url = f"{BASE_URL}{INSTAGRAM_ACCOUNT_ID}/insights?metric=reach,accounts_engaged,website_clicks&period=day&metric_type=total_value&access_token={ACCESS_TOKEN}"
         insights_response = requests.get(insights_url, timeout=120)
+
         if insights_response.status_code != 200:
             raise HTTPException(
                 status_code=insights_response.status_code,
@@ -69,12 +71,12 @@ def fetch_insights(business: str, db: Session = Depends(get_dynamic_db)):
         # Extract insights
         reach, accounts_engaged, website_clicks = None, None, None
         for item in insights_data.get("data", []):
-            if item.get("name") == "reach":
-                reach = item.get("values", [{}])[-1].get("value")
-            if item.get("name") == "accounts_engaged":
-                accounts_engaged = item.get("values", [{}])[-1].get("value")
-            if item.get("name") == "website_clicks":
-                website_clicks = item.get("values", [{}])[-1].get("value")
+            if item.get("name") == "reach" and "total_value" in item:
+                reach = item["total_value"].get("value")
+            if item.get("name") == "accounts_engaged" and "total_value" in item:
+                accounts_engaged = item["total_value"].get("value")
+            if item.get("name") == "website_clicks" and "total_value" in item:
+                website_clicks = item["total_value"].get("value")
 
         # Combine results
         result = {
@@ -145,7 +147,8 @@ def fetch_insights(business: str, db: Session = Depends(get_dynamic_db)):
         db.rollback()
         traceback.print_exc()
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": "Something went wrong."})
-    
+
+
 @router.get("/engaged_audience_demographics")
 def engaged_audience_demographics(business: str,db: Session = Depends(get_dynamic_db)):
     try:
