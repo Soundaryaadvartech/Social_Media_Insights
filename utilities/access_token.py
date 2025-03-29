@@ -31,6 +31,8 @@ def is_access_token_expired(access_token: str, business: str) -> bool:
     """
     credentials = get_credentials(business)
     BASE_URL = credentials["BASE_URL"]
+    if business.lower() == "zing":
+            BASE_URL = "https://graph.secure.facebook.com/v21.0/"
     INSTAGRAM_ACCOUNT_ID = credentials["INSTAGRAM_ACCOUNT_ID"]
     ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
 

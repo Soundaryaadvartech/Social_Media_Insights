@@ -24,6 +24,8 @@ def fetch_insights(business: str, db: Session = Depends(get_dynamic_db)):
         # Get credentials dynamically based on business_code
         credentials = get_credentials(business)
         BASE_URL = credentials["BASE_URL"]
+        if business.lower() == "zing":
+            BASE_URL = "https://graph.secure.facebook.com/v21.0/"
         ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
         INSTAGRAM_ACCOUNT_ID = credentials["INSTAGRAM_ACCOUNT_ID"]
         APP_ID = credentials["META_APP_ID"]
@@ -155,6 +157,8 @@ def engaged_audience_demographics(business: str,db: Session = Depends(get_dynami
         # Get credentials dynamically based on business_code
         credentials = get_credentials(business)
         BASE_URL = credentials["BASE_URL"]
+        if business.lower() == "zing":
+            BASE_URL = "https://graph.secure.facebook.com/v21.0/"
         ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
         INSTAGRAM_ACCOUNT_ID = credentials["INSTAGRAM_ACCOUNT_ID"]
         APP_ID = credentials["META_APP_ID"]
@@ -311,6 +315,8 @@ async def fetch_all_posts(business: str,db: Session = Depends(get_dynamic_db)):
         # Get credentials dynamically based on business_code
         credentials = get_credentials(business)
         BASE_URL = credentials["BASE_URL"]
+        if business.lower() == "zing":
+            BASE_URL = "https://graph.secure.facebook.com/v21.0/"
         ACCESS_TOKEN = credentials["ACCESS_TOKEN"]
         INSTAGRAM_ACCOUNT_ID = credentials["INSTAGRAM_ACCOUNT_ID"]
         APP_ID = credentials["META_APP_ID"]
