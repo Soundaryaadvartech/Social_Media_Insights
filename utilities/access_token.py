@@ -1,5 +1,6 @@
 import os
 import requests
+import time
 from dotenv import load_dotenv, set_key
 from fastapi import HTTPException, status
 from utilities.utils import get_credentials
@@ -62,6 +63,18 @@ def generate_new_long_lived_token(business) -> str:
     APP_ID = credentials["META_APP_ID"]
     APP_SECRET = credentials["META_APP_SECRET"]
 
+    long_lived_token_key = f"{business.upper()}_LONG_LIVED_TOKEN"
+    expiry_key = f"{business.upper()}_LONG_LIVED_TOKEN_EXPIRY"
+
+    LONG_LIVED_TOKEN = os.getenv(long_lived_token_key, "")
+    last_refreshed = int(os.getenv(expiry_key, 0))  # Last stored expiry timestamp
+
+     # Check if 40 days have passed
+    days_since_refresh = (int(time.time()) - last_refreshed) // (24 * 60 * 60)
+    if days_since_refresh < 50:
+        print(f"ℹ️ {business}: Long-lived token is still valid, skipping refresh.")
+        return LONG_LIVED_TOKEN  # Return current token
+
     try:
         short_lived_token = ACCESS_TOKEN
 
@@ -83,9 +96,14 @@ def generate_new_long_lived_token(business) -> str:
             new_long_lived_token = new_token_data.get("access_token")
             
             if new_long_lived_token:
-                # Update the .env file with the new token
-                set_key('.env', 'LONG_LIVED_TOKEN', new_long_lived_token)
-                load_dotenv()  # Reload the environment after updating
+                # Store new token and expiry time (60 days validity)
+                expiry_timestamp = int(time.time()) + (60 * 24 * 60 * 60)
+                # Update .env with brand-specific keys
+                set_key('.env', long_lived_token_key, new_long_lived_token)
+                set_key('.env', expiry_key, str(expiry_timestamp))
+                load_dotenv()  # Reload environment variables
+
+                print(f"✅ {business}: Successfully refreshed long-lived token.")
                 return new_long_lived_token
             else:
                 raise Exception("Failed to generate a new long-lived token.")
